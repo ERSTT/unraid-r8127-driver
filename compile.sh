@@ -1,3 +1,7 @@
+# Get current uname
+if [ -z "${UNAME}" ]; then
+  UNAME=$(uname -r)
+fi
 # Clone repository and get latest commit
 cd ${DATA_DIR}
 git clone https://github.com/ERSTT/unraid-r8127-driver
@@ -7,6 +11,9 @@ git checkout main
 
 # Compile r8127 Kernel Module and install it to the temporary directory "/RTL8127"
 cd ${DATA_DIR}/unraid-r8127-driver/r8127/src
+
+# Hardcode the kernel version in Makefile to override dynamic detection
+sed -i "s/\$(shell uname -r)/${UNAME}/g" Makefile
 
 # Compile Kernel Module and move it to a temporary directory
 make -j${CPU_COUNT}
@@ -39,5 +46,5 @@ $PLUGIN_NAME:
 $PLUGIN_NAME:
 $PLUGIN_NAME:
 EOF
-${DATA_DIR}/bzroot-extracted-$UNAME/sbin/makepkg -l n -c n $TMP_DIR/$PLUGIN_NAME-$PLUGIN_VERSION-$UNAME-1.txz
-md5sum $TMP_DIR/$PLUGIN_NAME-$PLUGIN_VERSION-$UNAME-1.txz | awk '{print $1}' > $TMP_DIR/$PLUGIN_NAME-$PLUGIN_VERSION-$UNAME-1.txz.md5
+makepkg -l n -c n ${DATA_DIR}/$PLUGIN_NAME-$PLUGIN_VERSION-$UNAME-1.txz
+md5sum ${DATA_DIR}/$PLUGIN_NAME-$PLUGIN_VERSION-$UNAME-1.txz | awk '{print $1}' > ${DATA_DIR}/$PLUGIN_NAME-$PLUGIN_VERSION-$UNAME-1.txz.md5
