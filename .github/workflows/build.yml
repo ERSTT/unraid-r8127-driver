@@ -19,12 +19,36 @@ jobs:
         run: |
           docker run --privileged --rm \
             -v ${{ github.workspace }}:/source \
-            -e "UNRAID_VERSION=${{ github.event.inputs.unraid_ver }}" \
-            -e "DL_ON_START=true" \
-            -e "EXTRACT=true" \
             ghcr.io/ich777/unraid_kernel:gcc_14.2.0 \
             /bin/bash -c "
-              cd /source/source && make
+              # 1. 定义你从 uname -r 拿到的真实内核版本
+              REAL_UNAME='6.18.26-Unraid'
+              DATA_DIR='/usr/src'
+              
+              echo '--- 开始手动准备 Unraid 内核环境 ---'
+              
+              # 2. 下载对应内核包 (模拟原脚本逻辑)
+              echo '正在下载内核源码包...'
+              wget -q --show-progress -O \${DATA_DIR}/linux-\${REAL_UNAME}.tar.xz \
+              \"https://github.com/ich777/unraid_kernel/releases/download/\${REAL_UNAME}/linux-\${REAL_UNAME}.tar.xz\"
+              
+              # 3. 解压
+              echo '正在解压...'
+              mkdir -p \${DATA_DIR}/linux-\${REAL_UNAME}
+              tar -xf \${DATA_DIR}/linux-\${REAL_UNAME}.tar.xz -C \${DATA_DIR}/linux-\${REAL_UNAME}
+              
+              # 4. 预编译内核依赖 (这是加载驱动的关键)
+              echo '正在预处理内核脚本...'
+              cd \${DATA_DIR}/linux-\${REAL_UNAME}
+              make -j\$(nproc) scripts prepare
+              
+              # 5. 编译你的驱动
+              echo '--- 开始编译 r8127 驱动 ---'
+              cd /source/source
+              # 通过 KDIR 参数强制指向我们解压的内核目录
+              make KDIR=\${DATA_DIR}/linux-\${REAL_UNAME}
+              
+              echo '编译完成！'
             "
 
       - name: Upload result
