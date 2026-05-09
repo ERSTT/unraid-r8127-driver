@@ -6,7 +6,7 @@ on:
       unraid_ver:
         description: 'Target Unraid Version'
         required: true
-        default: '7.3.0-rc.2'
+        default: '7.2.5'
 
 jobs:
   build:
