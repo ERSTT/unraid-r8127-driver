@@ -1,4 +1,4 @@
-name: Build r8127 with ich777 GCC14
+name: Build r8127 driver
 
 on:
   workflow_dispatch:
