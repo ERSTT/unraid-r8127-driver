@@ -17,37 +17,38 @@ jobs:
 
       - name: Compile r8127 Driver
         run: |
-          # 1. 运行容器，但覆盖它的入口点(Entrypoint)，防止它运行那个会卡住的脚本
+          # 使用 --entrypoint 覆盖镜像自带的启动脚本，防止它去跑 uname 检测
           docker run --privileged --rm \
+            --entrypoint /bin/bash \
             -v ${{ github.workspace }}:/source \
             ghcr.io/ich777/unraid_kernel:gcc_14.2.0 \
-            /bin/bash -c "
-              # 2. 定义目标内核版本 (请根据你机器 uname -r 的真实输出填写)
-              # 7.3.0-rc.2 对应的内核通常是 6.18.18-Unraid
-              TARGET_KERNEL='6.18.18-Unraid'
-              DATA_DIR='/usr/src'
+            -c "
+              # 1. 强制指定你要为哪个 Unraid 内核版本编译
+              # 注意：请务必去你的 Unraid 终端输入 uname -r 确认这个版本号！
+              # 如果是 7.3.0 正式版，内核可能是 6.18.x-Unraid 
+              TARGET_KERNEL='6.18.26-Unraid'
               
-              echo \"开始手动准备内核源码: \$TARGET_KERNEL\"
-              
-              # 3. 手动下载 ich777 预编译好的内核包
-              wget -q --show-progress -O \$DATA_DIR/linux-\$TARGET_KERNEL.tar.xz \
+              echo '--- 正在手动下载 Unraid 内核源码 ---'
+              mkdir -p /usr/src
+              wget -q --show-progress -O /usr/src/linux-\$TARGET_KERNEL.tar.xz \
                 \"https://github.com/ich777/unraid_kernel/releases/download/\$TARGET_KERNEL/linux-\$TARGET_KERNEL.tar.xz\"
               
-              # 4. 解压并准备环境
-              mkdir -p \$DATA_DIR/linux-\$TARGET_KERNEL
-              tar -xf \$DATA_DIR/linux-\$TARGET_KERNEL.tar.xz -C \$DATA_DIR/linux-\$TARGET_KERNEL
+              echo '--- 正在解压 ---'
+              mkdir -p /usr/src/linux-\$TARGET_KERNEL
+              tar -xf /usr/src/linux-\$TARGET_KERNEL.tar.xz -C /usr/src/linux-\$TARGET_KERNEL
               
-              # 5. 进入内核目录进行基本的编译准备
-              cd \$DATA_DIR/linux-\$TARGET_KERNEL
+              echo '--- 准备内核编译环境 ---'
+              cd /usr/src/linux-\$TARGET_KERNEL
+              # 这一步非常关键，生成编译驱动所需的脚本和头文件
               make -j$(nproc) scripts prepare
               
-              # 6. 编译你的驱动
-              echo \"内核就绪，开始编译驱动...\"
+              echo '--- 开始编译驱动 ---'
               cd /source/source
-              # 通过 KDIR 参数强制指定内核路径
-              make KDIR=\$DATA_DIR/linux-\$TARGET_KERNEL
+              # 强制指向我们下载好的内核目录
+              make KDIR=/usr/src/linux-\$TARGET_KERNEL
               
-              echo \"编译完成！\"
+              echo '--- 编译成功！ ---'
+              ls -l *.ko
             "
 
       - name: Upload result
