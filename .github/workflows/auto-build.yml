@@ -1,0 +1,85 @@
+name: Auto build r8127 driver
+
+on:
+  schedule:
+    - cron: '0 */12 * * *'
+  workflow_dispatch:
+    inputs:
+      unraid_kernel:
+        description: 'Manual Kernel Version (Leave empty for auto-check)'
+        required: false
+        default: ''
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Get Target Kernel Version
+        id: check_version
+        run: |
+          OFFICIAL_KERNEL=$(curl -s https://api.github.com/repos/unraid/unraid-nvidia-driver/releases/latest | jq -r .tag_name)
+          
+          INPUT_KERNEL="${{ github.event.inputs.unraid_kernel }}"
+          
+          TARGET_KERNEL=${INPUT_KERNEL:-$OFFICIAL_KERNEL}
+          
+          MY_LATEST=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/tags/$TARGET_KERNEL | jq -r .tag_name)
+          
+          echo "target_kernel=$TARGET_KERNEL" >> $GITHUB_OUTPUT
+          
+          if [ ! -z "$INPUT_KERNEL" ] || [ "$TARGET_KERNEL" != "$MY_LATEST" ]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+            echo "Target Version: $TARGET_KERNEL (New version found or manual trigger)"
+          else
+            echo "should_run=false" >> $GITHUB_OUTPUT
+            echo "Target Version: $TARGET_KERNEL (Already exists, skipping)"
+          fi
+
+      - name: Checkout Code
+        if: steps.check_version.outputs.should_run == 'true'
+        uses: actions/checkout@v4
+
+      - name: Compile r8127 Driver
+        if: steps.check_version.outputs.should_run == 'true'
+        run: |
+          docker run --rm \
+            --privileged \
+            -e DL_ON_START=true \
+            -e EXTRACT=true \
+            -e OVERWRITE=false \
+            -e CPU_THREADS=all \
+            -e CLEANUP=false \
+            -e UNAME=${{ steps.check_version.outputs.target_kernel }} \
+            -e DATA_DIR=/usr/src \
+            -v ${{ github.workspace }}:/usr/src \
+            --entrypoint "/bin/bash" \
+            'ghcr.io/ich777/unraid_kernel:gcc_14.2.0' \
+            -c "git config --global --add safe.directory /usr/src && cd /usr/src && chmod +x start-container.sh && ./start-container.sh && chmod +x compile-actions.sh && ./compile-actions.sh"
+
+      - name: Upload Artifacts
+        if: steps.check_version.outputs.should_run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: r8127-unraid-package
+          path: |
+            ${{ github.workspace }}/*.txz
+            ${{ github.workspace }}/*.txz.md5
+
+      - name: Create or Update Release
+        if: steps.check_version.outputs.should_run == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.check_version.outputs.target_kernel }}
+          name: ${{ steps.check_version.outputs.target_kernel }}
+          body: |
+            Automatically compiled r8127 driver for Unraid.
+            
+            - **Kernel Version**: ${{ steps.check_version.outputs.target_kernel }}
+            - **Compiler Container**: `ghcr.io/ich777/unraid_kernel:gcc_14.2.0`
+          draft: false
+          prerelease: false
+          files: |
+            ${{ github.workspace }}/*.txz
+            ${{ github.workspace }}/*.txz.md5
