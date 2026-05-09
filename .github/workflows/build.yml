@@ -1,0 +1,34 @@
+name: Build r8127 with ich777 GCC14
+
+on:
+  workflow_dispatch:
+    inputs:
+      unraid_ver:
+        description: 'Target Unraid Version'
+        required: true
+        default: '7.3.0-rc.2'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Compile using ich777 Kernel Container
+        run: |
+          docker run --privileged --rm \
+            -v ${{ github.workspace }}:/source \
+            -e "UNRAID_VERSION=${{ github.event.inputs.unraid_ver }}" \
+            -e "DL_ON_START=true" \
+            -e "EXTRACT=true" \
+            ghcr.io/ich777/unraid_kernel:gcc_14.2.0 \
+            /bin/bash -c "
+              cd /source/source && make
+            "
+
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        with:
+          name: r8127-driver-${{ github.event.inputs.unraid_ver }}
+          path: source/source/*.ko
