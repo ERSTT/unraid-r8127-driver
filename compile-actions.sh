@@ -8,7 +8,7 @@ PLUGIN_VERSION="$(git log -1 --format="%cs" | sed 's/-//g')"
 git checkout main
 
 # Compile r8127 Kernel Module and install it to the temporary directory "/RTL8127"
-cd ${DATA_DIR}/unraid-r8127-driver/r8127/src
+cd ${DATA_DIR}/r8127/src
 
 # Hardcode the kernel version in Makefile to override dynamic detection
 sed -i "s/\$(shell uname -r)/${UNAME}/g" Makefile
