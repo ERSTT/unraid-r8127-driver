@@ -1,16 +1,16 @@
 <?xml version='1.0' standalone='yes'?>
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "r8127-driver">
-  <!ENTITY author    "jinlife">
-  <!ENTITY version   "2026.01.04">
-  <!ENTITY gitURL    "https://raw.githubusercontent.com/&author;/unraid-r8125-r8152-driver/main">
+  <!ENTITY author    "ERSTT">
+  <!ENTITY version   "2026.05.09">
+  <!ENTITY gitURL    "https://raw.githubusercontent.com/&author;/unraid-r8127-driver/main">
   <!ENTITY pluginURL "&gitURL;/unraid-r8127.plg">
   <!ENTITY plugin    "/boot/config/plugins/&name;">
   <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
   <!ENTITY packages  "/boot/config/plugins/&name;/packages">
 ]>
 
-<PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.12.10" support="https://forums.unraid.net/topic/141349-plugin-realtek-r8125-r8168-and-r8152-drivers/">
+<PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.12.10" support="https://github.com/ERSTT/unraid-r8127-driver/issues/">
 
 <CHANGES>
 ###2026.01.04
@@ -24,7 +24,7 @@
   
 This package contains the Realtek OOT Drivers and installs them, a reboot is required after installing the plugin (upgrading to a newer Unraid version maybe needs a second reboot too).  
   
-Source: https://github.com/jinlife/unraid-r8125-r8152-driver
+Source: https://github.com/ERSTT/unraid-r8127-driver
 </INLINE>
 </FILE>
 
@@ -59,7 +59,7 @@ fi
 
 check() {
 if ! ls -1 &packages;/${KERNEL_V%%-*}/ | grep -q "${PACKAGE}" ; then
-  LAT_PACKAGE="$(wget -qO- https://api.github.com/repos/jinlife/unraid-r8125-r8152-driver/releases/tags/${KERNEL_V} | jq -r '.assets[].name' | grep "${PACKAGE}" | grep -E -v '\.md5$' | sort -V | tail -1)"
+  LAT_PACKAGE="$(wget -qO- https://api.github.com/repos/&author;/unraid-r8127-driver/releases/tags/${KERNEL_V} | jq -r '.assets[].name' | grep "${PACKAGE}" | grep -E -v '\.md5$' | sort -V | tail -1)"
   echo
   echo "-----------------------Downloading RTL8127 package!-------------------------"
   echo "--------This could take some time, please don't close this window!----------"
@@ -83,7 +83,7 @@ fi
 # Define Variables
 KERNEL_V="$(uname -r)"
 PACKAGE="r8127"
-DL_URL="https://github.com/jinlife/unraid-r8125-r8152-driver/releases/download/$KERNEL_V"
+DL_URL="https://github.com/&author;/unraid-r8127-driver/releases/download/$KERNEL_V"
 
 if [ ! -d "&packages;/${KERNEL_V%%-*}" ]; then
   mkdir -p "&packages;/${KERNEL_V%%-*}"
