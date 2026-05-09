@@ -92,4 +92,4 @@ fi
 echo "Container ready! Please open the console ${SSH_MESSAGE}to interact with the container and go to ${DATA_DIR}"
 
 # Sleep to keep container alive
-sleep infinity
+#sleep infinity
