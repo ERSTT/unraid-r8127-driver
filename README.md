@@ -1,4 +1,4 @@
-# unraid-r8127-driver
+# UNRAID-r8127-driver
 
 Realtek R8127 Linux drivers optimized for Unraid.
 
