@@ -27,8 +27,9 @@ jobs:
             -e UNAME=${{ github.event.inputs.unraid_kernel }} \
             -e DATA_DIR=/usr/src \
             -v ${{ github.workspace }}:/usr/src \
+            --entrypoint "/bin/bash" \
             'ghcr.io/ich777/unraid_kernel:gcc_14.2.0' \
-            sh -c "/usr/src/start-container.sh && cd /usr/src && source compile.sh"
+            -c "cd /usr/src && chmod +x compile.sh && ./compile.sh"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
