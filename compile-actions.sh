@@ -32,12 +32,12 @@ cp -R $BASE_DIR/* $TMP_DIR/$VERSION/
 mkdir $TMP_DIR/$VERSION/install
 tee $TMP_DIR/$VERSION/install/slack-desc <<EOF
        |-----handy-ruler------------------------------------------------------|
-$PLUGIN_NAME: $PLUGIN_NAME OOT driver by jinlife
+$PLUGIN_NAME: $PLUGIN_NAME OOT driver by ERSTT
 $PLUGIN_NAME:
 $PLUGIN_NAME: Source: https://github.com/ERSTT/unraid-r8127-driver
 $PLUGIN_NAME:
-$PLUGIN_NAME: Custom $PLUGIN_NAME driver package for Unraid Kernel v${UNAME%%-*} by ich777
-$PLUGIN_NAME:
+$PLUGIN_NAME: Custom $PLUGIN_NAME driver package for Unraid Kernel v${UNAME%%-*}
+$PLUGIN_NAME: Automated build via GitHub Actions
 $PLUGIN_NAME:
 $PLUGIN_NAME:
 $PLUGIN_NAME:
