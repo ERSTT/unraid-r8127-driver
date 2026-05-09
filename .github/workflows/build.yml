@@ -17,42 +17,44 @@ jobs:
 
       - name: Compile r8127 Driver
         run: |
-          # 使用 --entrypoint 覆盖镜像自带的启动脚本，防止它去跑 uname 检测
           docker run --privileged --rm \
             --entrypoint /bin/bash \
-            -v ${{ github.workspace }}:/source \
+            -v ${{ github.workspace }}:/work \
             ghcr.io/ich777/unraid_kernel:gcc_14.2.0 \
             -c "
-              # 1. 强制指定你要为哪个 Unraid 内核版本编译
-              # 注意：请务必去你的 Unraid 终端输入 uname -r 确认这个版本号！
-              # 如果是 7.3.0 正式版，内核可能是 6.18.x-Unraid 
-              TARGET_KERNEL='6.18.26-Unraid'
+              # 1. 设置内核版本（请确保 7.3.0 对应的内核号准确，这里以 6.18.18-Unraid 为例）
+              TARGET_KERNEL='6.18.18-Unraid'
+              KDIR=/usr/src/linux-\$TARGET_KERNEL
               
-              echo '--- 正在手动下载 Unraid 内核源码 ---'
+              # 2. 下载并准备内核源码
               mkdir -p /usr/src
-              wget -q --show-progress -O /usr/src/linux-\$TARGET_KERNEL.tar.xz \
+              wget -q -O /usr/src/linux-\$TARGET_KERNEL.tar.xz \
                 \"https://github.com/ich777/unraid_kernel/releases/download/\$TARGET_KERNEL/linux-\$TARGET_KERNEL.tar.xz\"
+              mkdir -p \$KDIR
+              tar -xf /usr/src/linux-\$TARGET_KERNEL.tar.xz -C \$KDIR
+              cd \$KDIR && make -j$(nproc) scripts prepare
               
-              echo '--- 正在解压 ---'
-              mkdir -p /usr/src/linux-\$TARGET_KERNEL
-              tar -xf /usr/src/linux-\$TARGET_KERNEL.tar.xz -C /usr/src/linux-\$TARGET_KERNEL
+              # 3. 进入正确的源码目录
+              # 根据仓库结构，Makefile 在 /work/source/ 目录下
+              cd /work/source
               
-              echo '--- 准备内核编译环境 ---'
-              cd /usr/src/linux-\$TARGET_KERNEL
-              # 这一步非常关键，生成编译驱动所需的脚本和头文件
-              make -j$(nproc) scripts prepare
+              echo '--- 开始编译 ---'
+              # 显式传递 KDIR 路径给 Makefile
+              make KDIR=\$KDIR
               
-              echo '--- 开始编译驱动 ---'
-              cd /source/source
-              # 强制指向我们下载好的内核目录
-              make KDIR=/usr/src/linux-\$TARGET_KERNEL
-              
-              echo '--- 编译成功！ ---'
-              ls -l *.ko
+              echo '--- 编译产物检查 ---'
+              if [ -f r8127.ko ]; then
+                echo '成功生成 r8127.ko'
+                cp r8127.ko /work/
+              else
+                echo '编译失败，未发现 r8127.ko'
+                ls -l
+                exit 1
+              fi
             "
 
-      - name: Upload result
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: r8127-driver-${{ github.event.inputs.unraid_ver }}
-          path: source/source/*.ko
+          name: r8127-driver-bin
+          path: ./*.ko
