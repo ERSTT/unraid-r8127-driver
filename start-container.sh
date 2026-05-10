@@ -15,7 +15,7 @@ fi
 
 # Download pre compiled Kernel for current Kernel version
 if [ "$DL_ON_START" == "true" ]; then
-  KERNELS_AVAIL=$(wget -qO- https://api.github.com/repos/ich777/unraid_kernel/releases | jq -r '.[].tag_name')
+  KERNELS_AVAIL=$(wget -qO- https://api.github.com/repos/ich777/unraid_kernel/releases?per_page=100 | jq -r '.[].tag_name')
 
   # Set CPU threads to use
   if [ "${CPU_THREADS}" == "all" ]; then
