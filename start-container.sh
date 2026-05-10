@@ -24,8 +24,8 @@ if [ "$DL_ON_START" == "true" ]; then
 
   # Check if pre compiled Kernel version is availabl, sleep container if not
   if ! echo "${KERNELS_AVAIL}" | grep -q "${UNAME}" ; then
-    echo "Kernel version ${UNAME%%-*} not found, putting contianer into sleep mode!"
-    sleep infinity
+    echo "Kernel version ${UNAME%%-*} not found, stopping build!"
+    exit 1
   fi
 
   # Check if pre compiled archive is locally available
@@ -36,8 +36,8 @@ if [ "$DL_ON_START" == "true" ]; then
       echo "Download successful, please wait..."
     else
       rm -rf ${DATA_DIR}/linux-${UNAME}.tar.xz
-      echo "Download failed, putting container into sleep mode."
-      sleep infinity
+      echo "Download failed, stopping build!"
+      exit 1
     fi
   else
     echo "linux-${UNAME}.tar.xz found!"
