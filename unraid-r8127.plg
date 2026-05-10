@@ -10,7 +10,7 @@
   <!ENTITY packages  "/boot/config/plugins/&name;/packages">
 ]>
 
-<PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="6.12.10" support="https://github.com/ERSTT/unraid-r8127-driver/issues/">
+<PLUGIN  name="&name;" author="&author;" version="&version;" pluginURL="&pluginURL;" min="7.0.0" support="https://github.com/ERSTT/unraid-r8127-driver/issues/">
 
 <CHANGES>
 ###2026.01.04
