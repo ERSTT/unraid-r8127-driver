@@ -19,7 +19,7 @@ jobs:
       - name: Get Target Kernel Version
         id: check_version
         run: |
-          OFFICIAL_KERNEL=$(curl -s https://api.github.com/repos/unraid/unraid-nvidia-driver/releases/latest | jq -r .tag_name)
+          OFFICIAL_KERNEL=$(curl -s https://api.github.com/repos/ich777/unraid_kernel/releases/latest | jq -r .tag_name)
           
           INPUT_KERNEL="${{ github.event.inputs.unraid_kernel }}"
           
