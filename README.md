@@ -6,7 +6,7 @@ Realtek R8127 Linux drivers optimized for Unraid.
 
 Copy and paste the following URL into the **Install Plugin** tab on the Unraid Plugins page:
 
-> https://raw.githubusercontent.com/ERSTT/unraid-r8127-driver/refs/heads/main/unraid-r8127.plg
+> https://raw.githubusercontent.com/ERSTT/unraid-r8127-driver/main/unraid-r8127.plg
 
 ## Features
 - **Multiple Queue:** Enabled for enhanced network performance.
